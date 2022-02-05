@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>QR Code Generator</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
+        * {
+            font-family: Montserrat;
+        }
+        
+        .card {
+            margin: 0 auto;
+            float: none;
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <script src="https://rawgit.com/sitepoint-editors/jsqrcode/master/src/qr_packed.js"></script>
+</head>
+
+<body>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    
+    
+
+    <div class="container" style="margin-top:50px; margin-left: 100px;margin-right: 100px">
+        <p>log out</p>
+
+        <div style="position: absolute;top: 50px;right: 200px; width: 50px;">
+            <a id="btn-scan-qr">
+                <img src="https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2017/07/1499401426qr_icon.svg">
+            </a>
+            <canvas hidden="" id="qr-canvas" style="width: 200px; height: 200px;"></canvas>
+
+            <div id="qr-result" hidden="">
+                <b>Data:</b> <span id="outputData"></span>
+            </div>
+        </div>
+
+        <h1 style="text-align: center;margin-top: 100px"> You have found 10 eggs</h1>
+
+        <p style="text-align:center;margin-top: 100px;">
+        <image style="width: 70%" src="https://media.istockphoto.com/photos/empty-3d-geographic-map-abstract-levels-render-picture-id1328792990?s=612x612"></image>
+        </p>
+    </div>
+        <script>
+            var qrcode = window.qrcode;
+
+            const video = document.createElement("video");
+            const canvasElement = document.getElementById("qr-canvas");
+            const canvas = canvasElement.getContext("2d");
+
+            const qrResult = document.getElementById("qr-result");
+            const outputData = document.getElementById("outputData");
+            const btnScanQR = document.getElementById("btn-scan-qr");
+
+            let scanning = false;
+
+            qrcode.callback = res => {
+            if (res) {
+                outputData.innerText = res;
+                scanning = false;
+
+                video.srcObject.getTracks().forEach(track => {
+                track.stop();
+                });
+
+                qrResult.hidden = false;
+                canvasElement.hidden = true;
+                btnScanQR.hidden = false;
+            }
+            };
+
+            btnScanQR.onclick = () => {
+                navigator.mediaDevices
+                .getUserMedia({ video: { facingMode: "environment" } })
+                .then(function(stream) {
+                    scanning = true;
+                    qrResult.hidden = true;
+                    btnScanQR.hidden = true;
+                    canvasElement.hidden = false;
+                    video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+                    video.srcObject = stream;
+                    video.play();
+                    tick();
+                    scan();
+                });
+            };
+
+            function tick() {
+                canvasElement.height = video.videoHeight;
+                canvasElement.width = video.videoWidth;
+                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+
+                scanning && requestAnimationFrame(tick);
+            }
+
+            function scan() {
+                try {
+                    console.log(qrcode)
+                    qrcode.decode();
+                    
+                } catch (e) {
+                    setTimeout(scan, 300);
+                }
+            }
+        </script>
+
+    </body>
+</html>
